@@ -1,0 +1,57 @@
+@page
+@model PromptBank.Pages.Prompts.DeleteModel
+@{
+    ViewData["Title"] = "Delete Prompt";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12" style="max-width:560px;">
+
+        <!-- Back link -->
+        <a asp-page="/Index" class="d-inline-flex align-items-center gap-1 text-decoration-none mb-3 pb-back-link">
+            <i class="bi bi-arrow-left"></i> Back to All Prompts
+        </a>
+
+        <div class="card shadow-sm pb-card-danger">
+
+            <!-- Danger header -->
+            <div class="card-header py-3 pb-card-danger-header">
+                <h1 class="h4 fw-bold mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Prompt
+                </h1>
+            </div>
+
+            <div class="card-body p-4">
+
+                <!-- Confirmation message -->
+                <p class="mb-1 text-muted">You are about to permanently delete this prompt:</p>
+
+                <div class="rounded p-3 mb-4 pb-delete-preview">
+                    <p class="fw-bold mb-1 pb-delete-preview-title">
+                        @Model.Prompt?.Title
+                    </p>
+                    <p class="mb-0 small text-muted">
+                        <i class="bi bi-person-fill me-1"></i>Added by @Model.Prompt?.Owner?.UserName
+                    </p>
+                </div>
+
+                <div class="alert alert-danger d-flex align-items-center gap-2 py-2" role="alert">
+                    <i class="bi bi-trash-fill flex-shrink-0"></i>
+                    <span>This action <strong>cannot be undone</strong>.</span>
+                </div>
+
+                <!-- Actions -->
+                <form method="post" class="d-flex gap-2 flex-wrap">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-trash me-1"></i>Yes, Delete It
+                    </button>
+                    <a asp-page="/Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i>Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>

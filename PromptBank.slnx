@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="PromptBank.Tests/PromptBank.Tests.csproj" />
+  <Project Path="PromptBank.UnitTests/PromptBank.UnitTests.csproj" />
+  <Project Path="PromptBank/PromptBank.csproj" />
+</Solution>

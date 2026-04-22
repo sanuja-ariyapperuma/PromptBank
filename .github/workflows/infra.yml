@@ -1,0 +1,74 @@
+# Infrastructure Provisioning
+#
+# Triggers:
+#   - Push to main when files under infra/ change (deploys to dev automatically)
+#   - Manual workflow_dispatch with environment choice (dev or prod)
+#
+# Authentication: OIDC / Workload Identity Federation — no stored Azure credentials.
+# Required GitHub secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+# Required for prod:       SQL_ADMIN_PASSWORD (dev uses Bicep newGuid() default)
+
+name: Infrastructure Provisioning
+
+on:
+  push:
+    branches: [main]
+    paths: ['infra/**']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  id-token: write   # Required for OIDC token exchange
+  contents: read
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    # Maps to a GitHub Environment (configure branch protection / approval gates for prod)
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || 'dev' }}
+      SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Bicep
+        run: az bicep build --file infra/main.bicep
+
+      - name: Deploy infrastructure
+        run: |
+          # Resolve the service principal's object ID so Bicep can assign the
+          # Key Vault Secrets Officer role to the deploying identity.
+          DEPLOYING_SP_ID=$(az ad sp show --id "${{ secrets.AZURE_CLIENT_ID }}" \
+            --query id -o tsv 2>/dev/null || echo "")
+
+          # Build the parameter list; only pass sqlAdminPassword when it is set
+          # (dev uses Bicep's newGuid() default; prod requires the secret to be configured).
+          EXTRA_PARAMS=""
+          if [[ -n "${SQL_ADMIN_PASSWORD}" ]]; then
+            EXTRA_PARAMS="sqlAdminPassword=${SQL_ADMIN_PASSWORD}"
+          fi
+
+          az deployment group create \
+            --resource-group "rg-promptbank-${ENVIRONMENT}" \
+            --template-file infra/main.bicep \
+            --parameters "infra/parameters/${ENVIRONMENT}.bicepparam" \
+            ${EXTRA_PARAMS:+--parameters "$EXTRA_PARAMS"} \
+            --parameters "deployingPrincipalId=${DEPLOYING_SP_ID}"

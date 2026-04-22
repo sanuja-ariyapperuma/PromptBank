@@ -1,0 +1,264 @@
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html { font-size: 16px; }
+}
+
+body {
+  margin-bottom: 60px;
+  background-color: var(--pb-bg);
+  color: var(--pb-text);
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+/* ── Theme tokens: light ─────────────────────────────────────────────────── */
+:root,
+[data-bs-theme="light"] {
+  --pb-bg:              #f8f7ff;
+  --pb-surface:         #ffffff;
+  --pb-surface-raised:  #eef2ff;
+  --pb-border:          #e0e7ff;
+  --pb-text:            #1e1b4b;
+  --pb-text-muted:      #6b7280;
+  --pb-primary:         #4f46e5;
+  --pb-primary-hover:   #4338ca;
+  --pb-code-bg:         #f1f5f9;
+  --pb-code-border:     #e2e8f0;
+  --pb-empty-star:      #cbd5e1;
+}
+
+/* ── Theme tokens: dark ──────────────────────────────────────────────────── */
+[data-bs-theme="dark"] {
+  --pb-bg:              #0d1117;
+  --pb-surface:         #161b22;
+  --pb-surface-raised:  #1e293b;
+  --pb-border:          #30363d;
+  --pb-text:            #e6edf3;
+  --pb-text-muted:      #8b949e;
+  --pb-primary:         #6366f1;
+  --pb-primary-hover:   #818cf8;
+  --pb-code-bg:         #0d1117;
+  --pb-code-border:     #30363d;
+  --pb-empty-star:      #475569;
+}
+
+/* ── Primary button ──────────────────────────────────────────────────────── */
+.btn-primary {
+  --bs-btn-bg:                  var(--pb-primary);
+  --bs-btn-border-color:        var(--pb-primary);
+  --bs-btn-hover-bg:            var(--pb-primary-hover);
+  --bs-btn-hover-border-color:  var(--pb-primary-hover);
+  --bs-btn-active-bg:           var(--pb-primary-hover);
+  --bs-btn-active-border-color: var(--pb-primary-hover);
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────────── */
+.pb-primary-text  { color: var(--pb-primary); }
+.pb-back-link     { color: var(--pb-primary); font-weight: 500; }
+.pb-link-primary  { color: var(--pb-primary); }
+
+/* ── Navbar ──────────────────────────────────────────────────────────────── */
+.pb-navbar {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, .35);
+}
+
+[data-bs-theme="dark"] .pb-navbar {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  box-shadow: 0 2px 12px rgba(99, 102, 241, .25);
+  border-bottom: 1px solid rgba(99, 102, 241, .2);
+}
+
+.pb-navbar .navbar-brand {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  color: #fff !important;
+}
+
+.pb-navbar .nav-link {
+  color: rgba(255,255,255,.85) !important;
+  font-weight: 500;
+}
+
+.pb-navbar .nav-link:hover,
+.pb-navbar .nav-link:focus {
+  color: #fff !important;
+}
+
+.pb-navbar .navbar-toggler      { border-color: rgba(255,255,255,.4); }
+.pb-navbar .navbar-toggler-icon { filter: invert(1); }
+
+/* ── Navbar action buttons ───────────────────────────────────────────────── */
+.btn-add-prompt {
+  background-color: #fff;
+  color: var(--pb-primary);
+  border: 2px solid #fff;
+  font-weight: 600;
+  border-radius: .5rem;
+  padding: .4rem .95rem;
+  transition: background-color .15s, color .15s;
+}
+
+.btn-add-prompt:hover,
+.btn-add-prompt:focus {
+  background-color: #ede9fe;
+  color: var(--pb-primary-hover);
+  border-color: #ede9fe;
+}
+
+[data-bs-theme="dark"] .btn-add-prompt {
+  background-color: rgba(255,255,255,.1);
+  color: #fff;
+  border-color: rgba(255,255,255,.2);
+}
+
+[data-bs-theme="dark"] .btn-add-prompt:hover,
+[data-bs-theme="dark"] .btn-add-prompt:focus {
+  background-color: rgba(255,255,255,.2);
+  color: #fff;
+  border-color: rgba(255,255,255,.3);
+}
+
+/* ── Theme toggle button ─────────────────────────────────────────────────── */
+#themeToggle {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: .4rem;
+  font-size: .95rem;
+  opacity: .85;
+  transition: opacity .15s;
+}
+
+#themeToggle:hover { opacity: 1; }
+
+/* ── Prompt cards ────────────────────────────────────────────────────────── */
+.prompt-card {
+  border: 1px solid var(--pb-border);
+  border-radius: .75rem;
+  background-color: var(--pb-surface);
+  box-shadow: 0 1px 4px rgba(79,70,229,.08);
+  transition: box-shadow .2s, transform .2s;
+}
+
+.prompt-card:hover {
+  box-shadow: 0 6px 20px rgba(79,70,229,.15);
+  transform: translateY(-2px);
+}
+
+[data-bs-theme="dark"] .prompt-card:hover {
+  box-shadow: 0 6px 24px rgba(99,102,241,.2);
+}
+
+.prompt-card .card-header {
+  background-color: var(--pb-surface-raised);
+  border-bottom: 1px solid var(--pb-border);
+  border-radius: .75rem .75rem 0 0 !important;
+}
+
+.prompt-card .card-footer {
+  border-top: 1px solid var(--pb-border);
+}
+
+
+.pb-card-form   { border: 1px solid var(--pb-border); border-radius: .75rem; }
+
+.pb-card-header {
+  background-color: var(--pb-surface-raised);
+  border-bottom: 1px solid var(--pb-border);
+  border-radius: .75rem .75rem 0 0;
+}
+
+/* ── Delete danger card ──────────────────────────────────────────────────── */
+.pb-card-danger { border: 1px solid #fecaca; border-radius: .75rem; }
+
+[data-bs-theme="dark"] .pb-card-danger { border-color: #7f1d1d; }
+
+.pb-card-danger-header {
+  background: #fef2f2;
+  border-bottom: 1px solid #fecaca;
+  border-radius: .75rem .75rem 0 0;
+}
+
+[data-bs-theme="dark"] .pb-card-danger-header {
+  background: #1c0f0f;
+  border-bottom-color: #7f1d1d;
+}
+
+.pb-delete-preview {
+  background: var(--pb-surface-raised);
+  border: 1px solid var(--pb-border);
+  border-radius: .375rem;
+}
+
+.pb-delete-preview-title { color: var(--pb-text); font-size: 1.05rem; }
+
+/* ── Prompt content pre block ────────────────────────────────────────────── */
+.prompt-content {
+  font-size: .85rem;
+  background: var(--pb-code-bg);
+  border-radius: .4rem;
+  padding: .75rem 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow: hidden;
+  transition: max-height .3s ease;
+  border: 1px solid var(--pb-code-border);
+  color: var(--pb-text);
+}
+
+.prompt-content.expanded { max-height: 1000px; }
+
+/* ── Prompt card footer separator dot ───────────────────────────────────── */
+.prompt-card-sep {
+  color: var(--pb-text-muted);
+  opacity: .4;
+  font-size: .75rem;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ── Stars ───────────────────────────────────────────────────────────────── */
+.star-btn {
+  background: none;
+  border: none;
+  padding: 0 1px;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform .1s;
+  color: #f59e0b;
+}
+
+.star-btn:hover   { transform: scale(1.25); }
+.star-btn.empty   { color: var(--pb-empty-star); }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.pb-footer {
+  background-color: var(--pb-surface-raised);
+  border-top: 1px solid var(--pb-border);
+  color: var(--pb-text-muted);
+  font-size: .85rem;
+}

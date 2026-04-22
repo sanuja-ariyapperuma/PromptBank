@@ -1,0 +1,83 @@
+@page
+@model PromptBank.Pages.Prompts.CreateModel
+@{
+    ViewData["Title"] = "Add Prompt";
+}
+
+<div class="row justify-content-center">
+    <div class="col-12" style="max-width:700px;">
+
+        <a asp-page="/Index" class="d-inline-flex align-items-center gap-1 text-decoration-none mb-3 pb-back-link">
+            <i class="bi bi-arrow-left"></i> Back to All Prompts
+        </a>
+
+        <div class="card shadow-sm pb-card-form">
+            <div class="card-header py-3 pb-card-header">
+                <h1 class="h4 fw-bold mb-0 pb-primary-text">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Prompt
+                </h1>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Title" class="form-label fw-semibold">
+                            Title <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Input.Title"
+                               class="form-control"
+                               placeholder="e.g. Explain code"
+                               autocomplete="off" />
+                        <span asp-validation-for="Input.Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Description" class="form-label fw-semibold">
+                            Description <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="Input.Description"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Briefly describe the purpose of this prompt…"
+                                  style="resize:vertical;"></textarea>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span asp-validation-for="Input.Description" class="text-danger small"></span>
+                            <span class="text-muted small">Max 500 characters</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Input.Content" class="form-label fw-semibold">
+                            Prompt Content <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="Input.Content"
+                                  class="form-control font-monospace"
+                                  rows="8"
+                                  placeholder="Enter your Copilot prompt here..."
+                                  style="font-size:.875rem;resize:vertical;"></textarea>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span asp-validation-for="Input.Content" class="text-danger small"></span>
+                            <span class="text-muted small">Max 4,000 characters</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 align-items-center">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-lg me-1"></i>Add Prompt
+                        </button>
+                        <a asp-page="/Index" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

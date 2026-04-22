@@ -1,0 +1,183 @@
+@page
+@model IndexModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "All Prompts";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="h2 fw-bold mb-0 pb-primary-text">All Prompts</h1>
+        <p class="text-muted mb-0 small">
+            @Model.Prompts.Count prompt@(Model.Prompts.Count == 1 ? "" : "s")@(string.IsNullOrWhiteSpace(Model.SearchQuery) ? " in the bank" : $" found for \"{Model.SearchQuery}\"")
+        </p>
+    </div>
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <a asp-page="/Prompts/Create" class="btn btn-primary d-inline-flex align-items-center gap-1">
+            <i class="bi bi-plus-lg"></i> Add Prompt
+        </a>
+    }
+</div>
+
+<form method="get" class="mb-4" role="search">
+    <div class="input-group">
+        <span class="input-group-text bg-transparent border-end-0">
+            <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="search"
+               name="q"
+               value="@Model.SearchQuery"
+               class="form-control border-start-0 ps-0"
+               placeholder="Search prompts by meaning…"
+               aria-label="Search prompts" />
+        <button type="submit" class="btn btn-primary" aria-label="Search">
+            <i class="bi bi-search"></i>
+        </button>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+        {
+            <a href="/" class="btn btn-outline-secondary" title="Clear search" aria-label="Clear search">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        }
+    </div>
+</form>
+
+@if (!Model.Prompts.Any())
+{
+    <div class="text-center py-5 my-4">
+        @if (!string.IsNullOrWhiteSpace(Model.SearchQuery))
+        {
+            <div style="font-size:4rem;">🔍</div>
+            <h2 class="h4 mt-3 fw-semibold pb-primary-text">No results found</h2>
+            <p class="text-muted mb-4">No prompts matched <strong>"@Model.SearchQuery"</strong>. Try different wording or <a href="/">browse all prompts</a>.</p>
+        }
+        else
+        {
+            <div style="font-size:4rem;">📭</div>
+            <h2 class="h4 mt-3 fw-semibold pb-primary-text">No prompts yet</h2>
+            <p class="text-muted mb-4">Be the first to add one and kick things off!</p>
+            @if (User.Identity!.IsAuthenticated)
+            {
+                <a asp-page="/Prompts/Create" class="btn btn-primary px-4">
+                    <i class="bi bi-plus-lg me-1"></i>Add Prompt
+                </a>
+            }
+        }
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var p in Model.Prompts)
+        {
+            var avgRating = p.AverageRating;
+            var ratingCount = p.RatingCount;
+            var shortDate = p.CreatedAt.ToString("MMM d, yyyy");
+            var cardId = $"card-{p.Id}";
+            var isPinned = Model.UserPinnedIds.Contains(p.Id);
+
+            <div class="col-12">
+                <div class="card prompt-card" id="@cardId">
+
+                    <div class="card-header d-flex align-items-center justify-content-between gap-2 py-3 px-4">
+                        <h2 class="h6 fw-bold mb-0 flex-grow-1">
+                            @p.Title
+                        </h2>
+                        <span class="badge bg-warning text-dark flex-shrink-0 pin-badge @(isPinned ? "" : "d-none")">
+                            📌 Pinned
+                        </span>
+                    </div>
+
+                    <div class="card-body px-4 py-3">
+                        <p class="text-muted small mb-2">@p.Description</p>
+                        <pre class="prompt-content" id="content-@p.Id">@p.Content</pre>
+                        @if (p.Content.Length > 200)
+                        {
+                            <button type="button"
+                                    class="btn btn-link btn-sm p-0 mt-1 text-decoration-none show-more-btn"
+                                    data-target="content-@p.Id"
+                                    aria-expanded="false">
+                                Show more <i class="bi bi-chevron-down"></i>
+                            </button>
+                        }
+                    </div>
+
+                    <div class="card-footer bg-transparent pt-2 pb-3 px-4">
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+
+                            @* ── Left: author · date · stars ──────────────── *@
+                            <span class="small text-muted">
+                                <i class="bi bi-person-fill me-1"></i>@(p.Owner?.UserName ?? "Unknown")
+                            </span>
+                            <span class="prompt-card-sep d-none d-sm-inline" aria-hidden="true">·</span>
+                            <span class="small text-muted">
+                                <i class="bi bi-calendar3 me-1"></i>@shortDate
+                            </span>
+                            <span class="prompt-card-sep d-none d-sm-inline" aria-hidden="true">·</span>
+
+                            <div class="star-row d-flex align-items-center" role="group"
+                                 aria-label="Rate this prompt"
+                                 data-auth="@User.Identity!.IsAuthenticated.ToString().ToLower()">
+                                @for (int s = 1; s <= 5; s++)
+                                {
+                                    bool filled = (s <= Math.Round(avgRating));
+                                    <button type="button"
+                                            class="star-btn @(filled ? "" : "empty")"
+                                            data-star="@s"
+                                            data-id="@p.Id"
+                                            aria-label="Rate @s star@(s > 1 ? "s" : "")">
+                                        @(filled ? "★" : "☆")
+                                    </button>
+                                }
+                            </div>
+                            <span class="small text-muted">
+                                <span class="avg-score">@(ratingCount > 0 ? avgRating.ToString("0.0") : "–")</span>
+                                <span class="vote-count">(@ratingCount vote@(ratingCount == 1 ? "" : "s"))</span>
+                            </span>
+
+                            @* ── Right: action buttons pushed to far end ─── *@
+                            <div class="ms-auto d-flex flex-wrap gap-2 align-items-center">
+
+                                <button type="button"
+                                        class="btn btn-outline-secondary btn-sm btn-copy"
+                                        data-content="@p.Content"
+                                        title="Copy prompt to clipboard"
+                                        aria-label="Copy prompt to clipboard">
+                                    <i class="bi bi-clipboard me-1"></i>Copy
+                                </button>
+
+                                @if (Model.CurrentUserId == p.OwnerId)
+                                {
+                                    <a asp-page="/Prompts/Edit" asp-route-id="@p.Id"
+                                       class="btn btn-outline-primary btn-sm"
+                                       title="Edit this prompt">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </a>
+
+                                    <a asp-page="/Prompts/Delete" asp-route-id="@p.Id"
+                                       class="btn btn-outline-danger btn-sm"
+                                       title="Delete this prompt">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </a>
+                                }
+
+                                @if (User.Identity!.IsAuthenticated)
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-pin @(isPinned ? "btn-warning" : "btn-outline-secondary")"
+                                            data-id="@p.Id"
+                                            data-pinned="@isPinned.ToString().ToLower()"
+                                            title="@(isPinned ? "Unpin this prompt" : "Pin to top")">
+                                        @(isPinned ? "📌 Unpin" : "📍 Pin")
+                                    </button>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

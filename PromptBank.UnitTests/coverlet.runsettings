@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  RunSettings for the PromptBank.UnitTests project.
+
+  The ExcludeByFile list strips out files that are either auto-generated
+  or belong to integration-level concerns (app bootstrap, Razor views,
+  EF Core scaffolded migrations) so that the coverage report focuses
+  exclusively on hand-written, unit-testable C# code.
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <!--
+            ExcludeByFile removes files that are auto-generated or belong to
+            infrastructure concerns outside the scope of unit testing:
+
+              **/Program.cs          – top-level app bootstrap (no logic to unit-test)
+              **/Migrations/**       – EF Core scaffold output (auto-generated)
+              **/*.cshtml            – compiled Razor markup views (no C# logic)
+              **/Error.cshtml.cs     – sets only RequestId from HttpContext (framework glue)
+              **/Privacy.cshtml.cs   – empty OnGet() returning Page() (no branching logic)
+
+            NOTE: **/*.cshtml (without the trailing .cs) matches only the pure
+            markup files.  The *.cshtml.cs page-model code-behinds are kept
+            in scope because they contain hand-written logic covered by tests.
+          -->
+          <ExcludeByFile>
+            **/Program.cs,
+            **/Migrations/**,
+            **/*.cshtml,
+            **/Error.cshtml.cs,
+            **/Privacy.cshtml.cs
+          </ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

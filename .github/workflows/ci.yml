@@ -1,0 +1,54 @@
+# Continuous Integration
+#
+# Triggers:
+#   - Push to main
+#   - Pull request targeting main
+#
+# Authentication: None required — all tests run in-process with an in-memory SQLite database.
+# No GitHub secrets are needed.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      - name: Build (Release)
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: dotnet test PromptBank.UnitTests --no-build --configuration Release
+
+      - name: Run Playwright E2E tests
+        run: dotnet test PromptBank.Tests --no-build --configuration Release
+
+      - name: Publish
+        run: dotnet publish PromptBank --no-build --configuration Release --output ./publish
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptbank-app
+          path: ./publish
+          retention-days: 7
