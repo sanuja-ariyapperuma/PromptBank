@@ -63,6 +63,7 @@ jobs:
       - name: Deploy infrastructure
         run: |
           az deployment group create \
+            --name "deploy-${GITHUB_RUN_ID}" \
             --resource-group "rg-promptbank-${ENVIRONMENT}" \
             --template-file infra/main.bicep \
             --parameters "infra/parameters/${ENVIRONMENT}.bicepparam"
@@ -91,6 +92,7 @@ jobs:
       - name: Deploy infrastructure
         run: |
           az deployment group create \
+            --name "deploy-${GITHUB_RUN_ID}" \
             --resource-group "rg-promptbank-${ENVIRONMENT}" \
             --template-file infra/main.bicep \
             --parameters "infra/parameters/${ENVIRONMENT}.bicepparam"
