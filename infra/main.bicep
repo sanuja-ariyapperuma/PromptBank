@@ -9,7 +9,7 @@ param environment string
 @description('Azure region for all resources. Defaults to uksouth.')
 param location string = 'uksouth'
 
-var appPlanSku = environment == 'prod' ? 'B2' : 'F1'
+var appPlanSku = environment == 'prod' ? 'B2' : 'B1'
 var aspnetEnvironment = environment == 'prod' ? 'Production' : 'Development'
 
 // Resource naming — all follow the pattern described in FR-5
