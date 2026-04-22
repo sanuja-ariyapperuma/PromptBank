@@ -48,6 +48,9 @@ builder.Services.AddScoped<IPromptService, PromptService>();
 // Semantic search
 builder.Services.AddSingleton<LocalEmbedder>();
 builder.Services.AddSingleton<IEmbeddingService, EmbeddingService>();
+
+// Backfill missing embeddings in the background after startup (keeps ONNX load off the critical path)
+builder.Services.AddHostedService<EmbeddingBackfillService>();
 builder.Services.Configure<SearchOptions>(builder.Configuration.GetSection("Search"));
 
 // Rate limiting for AJAX endpoints
@@ -131,13 +134,7 @@ using (var scope = app.Services.CreateScope())
             await dbForSeed.SaveChangesAsync();
     }
 
-    // Backfill embeddings for any prompts that were created before this feature was added
-    var embeddingService = scope.ServiceProvider.GetRequiredService<IEmbeddingService>();
-    var needsEmbedding = dbForSeed.Prompts.Where(p => p.TitleDescriptionEmbedding == null).ToList();
-    foreach (var p in needsEmbedding)
-        p.TitleDescriptionEmbedding = embeddingService.GetEmbeddingBytes($"{p.Title} {p.Description}");
-    if (needsEmbedding.Count > 0)
-        await dbForSeed.SaveChangesAsync();
+    // Backfill embeddings handled by EmbeddingBackfillService (runs after startup)
 }
 } // end if (!Test:SkipDatabaseInit)
 
