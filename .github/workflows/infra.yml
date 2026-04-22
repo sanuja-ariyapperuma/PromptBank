@@ -5,17 +5,12 @@
 #   - Push to main (infra/ changes, i.e. PR merged)  → deploys to prod
 #   - Manual workflow_dispatch with environment choice
 #
-# Approval gate for prod: configure "Required reviewers" on the prod GitHub
-# Environment in repo Settings → Environments. The provision-prod job will
-# pause and wait for approval before running.
-#
 # Authentication: OIDC / Workload Identity Federation — no stored Azure credentials.
 # Required GitHub secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
-# Required for prod:       SQL_ADMIN_PASSWORD (dev uses Bicep newGuid() default)
 #
-# Azure federated identity credentials required (one per environment):
-#   Subject: repo:sanuja-ariyapperuma/PromptBank:environment:dev
-#   Subject: repo:sanuja-ariyapperuma/PromptBank:environment:prod
+# Azure federated identity credentials required on the App Registration:
+#   Subject: repo:sanuja-ariyapperuma/PromptBank:ref:refs/heads/main  (push + workflow_dispatch)
+#   Subject: repo:sanuja-ariyapperuma/PromptBank:pull_request          (PR-based dev deploys)
 
 name: Infrastructure Provisioning
 
@@ -45,10 +40,11 @@ jobs:
   provision-dev:
     if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
     runs-on: ubuntu-latest
-    environment: dev
+    # Note: no GitHub 'environment:' here — using it would change the OIDC subject
+    # to 'environment:dev', which does not match the branch-based federated credential
+    # configured in Azure (ref:refs/heads/main / pull_request).
     env:
       ENVIRONMENT: dev
-      SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -66,28 +62,17 @@ jobs:
 
       - name: Deploy infrastructure
         run: |
-          DEPLOYING_SP_ID=$(az ad sp show --id "${{ secrets.AZURE_CLIENT_ID }}" \
-            --query id -o tsv 2>/dev/null || echo "")
-
-          EXTRA_PARAMS=""
-          if [[ -n "${SQL_ADMIN_PASSWORD}" ]]; then
-            EXTRA_PARAMS="sqlAdminPassword=${SQL_ADMIN_PASSWORD}"
-          fi
-
           az deployment group create \
             --resource-group "rg-promptbank-${ENVIRONMENT}" \
             --template-file infra/main.bicep \
-            --parameters "infra/parameters/${ENVIRONMENT}.bicepparam" \
-            ${EXTRA_PARAMS:+--parameters "$EXTRA_PARAMS"} \
-            --parameters "deployingPrincipalId=${DEPLOYING_SP_ID}"
+            --parameters "infra/parameters/${ENVIRONMENT}.bicepparam"
 
   provision-prod:
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'prod')
     runs-on: ubuntu-latest
-    environment: prod
+    # Note: no GitHub 'environment:' here — same OIDC subject reason as provision-dev.
     env:
       ENVIRONMENT: prod
-      SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -105,20 +90,7 @@ jobs:
 
       - name: Deploy infrastructure
         run: |
-          # Resolve the service principal's object ID so Bicep can assign the
-          # Key Vault Secrets Officer role to the deploying identity.
-          DEPLOYING_SP_ID=$(az ad sp show --id "${{ secrets.AZURE_CLIENT_ID }}" \
-            --query id -o tsv 2>/dev/null || echo "")
-
-          # prod always requires SQL_ADMIN_PASSWORD to be configured as a secret.
-          EXTRA_PARAMS=""
-          if [[ -n "${SQL_ADMIN_PASSWORD}" ]]; then
-            EXTRA_PARAMS="sqlAdminPassword=${SQL_ADMIN_PASSWORD}"
-          fi
-
           az deployment group create \
             --resource-group "rg-promptbank-${ENVIRONMENT}" \
             --template-file infra/main.bicep \
-            --parameters "infra/parameters/${ENVIRONMENT}.bicepparam" \
-            ${EXTRA_PARAMS:+--parameters "$EXTRA_PARAMS"} \
-            --parameters "deployingPrincipalId=${DEPLOYING_SP_ID}"
+            --parameters "infra/parameters/${ENVIRONMENT}.bicepparam"
