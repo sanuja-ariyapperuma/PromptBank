@@ -2,6 +2,8 @@
 
 > **Your team's shared GitHub Copilot prompt library** — a collaborative, internally-hosted web application where engineers store, discover, rate, and reuse the Copilot prompts that actually work.
 
+<!-- last updated: 2026-04-22 -->
+
 ---
 
 ## Table of Contents
