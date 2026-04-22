@@ -41,7 +41,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Zip artifact for deployment
-        run: zip -r app.zip ./publish
+        run: cd ./publish && zip -r ../app.zip .
 
       - name: Azure Login (OIDC)
         uses: azure/login@v2
@@ -78,7 +78,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Zip artifact for deployment
-        run: zip -r app.zip ./publish
+        run: cd ./publish && zip -r ../app.zip .
 
       - name: Azure Login (OIDC)
         uses: azure/login@v2
