@@ -74,7 +74,36 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     if (db.Database.IsRelational())
-        await db.Database.MigrateAsync();
+    {
+        try
+        {
+            await db.Database.MigrateAsync();
+        }
+        catch (Microsoft.Data.Sqlite.SqliteException ex) when (ex.Message.Contains("already exists"))
+        {
+            // The database file has orphaned tables but no migration history — this
+            // happens when a previous container crashed between table creation and
+            // committing the migration history record (common on Azure App Service
+            // when the container hits the startup time limit mid-migration).
+            // Self-heal: delete the database file and migrate from scratch.
+            var startupLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            startupLogger.LogWarning("MigrateAsync failed with 'table already exists'. Database is partially initialised — deleting and recreating.");
+            var connStr = db.Database.GetConnectionString()!;
+            var dbPath = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connStr).DataSource;
+            db.Database.GetDbConnection().Close();
+            foreach (var ext in new[] { "", "-shm", "-wal" })
+            {
+                var path = dbPath + ext;
+                if (File.Exists(path)) File.Delete(path);
+            }
+            await db.Database.MigrateAsync();
+        }
+
+        // Azure Files (the /home persistent mount) does not reliably support the
+        // file-level locking that SQLite WAL mode requires on a networked filesystem.
+        // Force DELETE journal mode to avoid corruption and lock errors.
+        await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=DELETE;");
+    }
     else
         await db.Database.EnsureCreatedAsync();
 
