@@ -24,6 +24,7 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|10.0'
+      appCommandLine: 'dotnet PromptBank.dll'
       minTlsVersion: '1.2'
       appSettings: [
         {
@@ -33,10 +34,6 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
         {
           name: 'ConnectionStrings__DefaultConnection'
           value: sqliteConnectionString
-        }
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
         }
       ]
     }
