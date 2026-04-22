@@ -35,6 +35,12 @@ resource webApp 'Microsoft.Web/sites@2023-01-01' = {
           name: 'ConnectionStrings__DefaultConnection'
           value: sqliteConnectionString
         }
+        {
+          // ONNX model loading + embedding generation on first boot exceeds the
+          // default 230s container start limit. 600s gives enough headroom on B1/B2.
+          name: 'WEBSITES_CONTAINER_START_TIME_LIMIT'
+          value: '600'
+        }
       ]
     }
   }
