@@ -4,8 +4,10 @@
 #   - Push to main
 #   - Pull request targeting main
 #
-# Authentication: None required — all tests run in-process with an in-memory SQLite database.
-# No GitHub secrets are needed.
+# Authentication: OIDC is used for the Docker build+push steps.
+# Required GitHub secrets (for Docker steps only):
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+#   AZURE_ACR_NAME  — ACR login server, e.g. crpromptbankdev.azurecr.io
 
 name: CI
 
@@ -17,6 +19,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write   # Required for OIDC token exchange (ACR login)
 
 jobs:
   build-and-test:
@@ -46,9 +49,45 @@ jobs:
       - name: Publish
         run: dotnet publish PromptBank --no-build --configuration Release --output ./publish
 
-      - name: Upload artifact
+      - name: Upload publish artifact
         uses: actions/upload-artifact@v4
         with:
           name: promptbank-app
           path: ./publish
           retention-days: 7
+
+      # ── Docker build & push ───────────────────────────────────────────────
+      # Builds the container image and pushes it to Azure Container Registry.
+      # CD retrieves the image tag from the 'image-tag' artifact to deploy.
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        run: az acr login --name ${{ secrets.AZURE_ACR_NAME }}
+
+      - name: Compute image tag
+        id: tag
+        run: echo "value=sha-$(echo $GITHUB_SHA | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_BASE=${{ secrets.AZURE_ACR_NAME }}/promptbank
+          TAG=${{ steps.tag.outputs.value }}
+          docker build -t "$IMAGE_BASE:$TAG" -t "$IMAGE_BASE:latest" .
+          docker push "$IMAGE_BASE:$TAG"
+          docker push "$IMAGE_BASE:latest"
+
+      - name: Write image tag to file for CD
+        run: echo "${{ steps.tag.outputs.value }}" > image-tag.txt
+
+      - name: Upload image tag artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-tag
+          path: image-tag.txt
+          retention-days: 7
+

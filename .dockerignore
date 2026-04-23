@@ -1,0 +1,29 @@
+# Build outputs (match at any depth so PromptBank/bin/ and PromptBank/obj/ are excluded)
+**/bin/
+**/obj/
+
+# Local database files (match at any depth)
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# Test results
+TestResults/
+
+# Deployment artefacts
+publish-deploy/
+app-deploy.zip
+
+# Infrastructure-as-code (not needed in the image)
+infra/
+
+# Git & GitHub metadata
+.git/
+.github/
+
+# IDE / OS artefacts
+.vs/
+.vscode/
+*.user
+.DS_Store
+Thumbs.db
