@@ -7,6 +7,7 @@
 #
 # Authentication: OIDC / Workload Identity Federation — no stored Azure credentials.
 # Required GitHub secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+#                          AZURE_ACR_NAME (login server, e.g. crpromptbankdev.azurecr.io)
 
 name: CD
 
@@ -32,16 +33,17 @@ jobs:
       ENVIRONMENT: dev
 
     steps:
-      - name: Download artifact
+      - name: Download image tag artifact
         uses: actions/download-artifact@v4
         with:
-          name: promptbank-app
-          path: ./publish
+          name: image-tag
+          path: ./artifact
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Zip artifact for deployment
-        run: cd ./publish && zip -r ../app.zip .
+      - name: Read image tag
+        id: tag
+        run: echo "value=$(cat ./artifact/image-tag.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Azure Login (OIDC)
         uses: azure/login@v2
@@ -50,13 +52,18 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy to Azure App Service
+      - name: Deploy container image to App Service
         run: |
-          az webapp deploy \
+          az webapp config container set \
             --name app-promptbank-${ENVIRONMENT} \
             --resource-group rg-promptbank-${ENVIRONMENT} \
-            --type zip \
-            --src-path app.zip
+            --container-image-name ${{ secrets.AZURE_ACR_NAME }}/promptbank:${{ steps.tag.outputs.value }}
+
+      - name: Restart App Service
+        run: |
+          az webapp restart \
+            --name app-promptbank-${ENVIRONMENT} \
+            --resource-group rg-promptbank-${ENVIRONMENT}
 
   deploy-prod:
     name: Deploy to prod
@@ -69,16 +76,17 @@ jobs:
       ENVIRONMENT: prod
 
     steps:
-      - name: Download artifact
+      - name: Download image tag artifact
         uses: actions/download-artifact@v4
         with:
-          name: promptbank-app
-          path: ./publish
+          name: image-tag
+          path: ./artifact
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Zip artifact for deployment
-        run: cd ./publish && zip -r ../app.zip .
+      - name: Read image tag
+        id: tag
+        run: echo "value=$(cat ./artifact/image-tag.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Azure Login (OIDC)
         uses: azure/login@v2
@@ -87,10 +95,16 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy to Azure App Service
+      - name: Deploy container image to App Service
         run: |
-          az webapp deploy \
+          az webapp config container set \
             --name app-promptbank-${ENVIRONMENT} \
             --resource-group rg-promptbank-${ENVIRONMENT} \
-            --type zip \
-            --src-path app.zip
+            --container-image-name ${{ secrets.AZURE_ACR_NAME }}/promptbank:${{ steps.tag.outputs.value }}
+
+      - name: Restart App Service
+        run: |
+          az webapp restart \
+            --name app-promptbank-${ENVIRONMENT} \
+            --resource-group rg-promptbank-${ENVIRONMENT}
+

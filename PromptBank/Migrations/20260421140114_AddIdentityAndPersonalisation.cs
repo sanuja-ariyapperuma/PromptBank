@@ -11,6 +11,11 @@ namespace PromptBank.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // The InitialCreate migration created an earlier version of Prompts (with OwnerName/IsPinned).
+            // Drop it so this migration can re-create it with the Identity-linked schema (OwnerId FK).
+            migrationBuilder.DropTable(
+                name: "Prompts");
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
