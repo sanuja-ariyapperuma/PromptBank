@@ -1,30 +1,193 @@
-# Prompt Bank 📚
+# copilot-first-workflow 🤖
 
-> **Your team's shared GitHub Copilot prompt library** — a collaborative, internally-hosted web application where engineers store, discover, rate, and reuse the Copilot prompts that actually work.
+> **A blueprint for AI-assisted software engineering** — a production-grade .NET web application built end-to-end with GitHub Copilot CLI, demonstrating a Copilot-first development workflow from first spec to cloud deployment.
 
-<!-- last updated: 2026-04-22 -->
+![Built with GitHub Copilot](https://img.shields.io/badge/Built%20with-GitHub%20Copilot-6e40c9?logo=githubcopilot&logoColor=white) ![Copilot-First Workflow](https://img.shields.io/badge/Copilot--First-Workflow-6e40c9?logo=githubcopilot&logoColor=white) ![Spec-Driven](https://img.shields.io/badge/Spec--Driven-Development-333333?logo=readthedocs&logoColor=white) ![Custom Agents](https://img.shields.io/badge/Custom-AI%20Agents-e85d04?logo=probot&logoColor=white) ![Playwright MCP](https://img.shields.io/badge/Playwright-MCP%20Server-2EAD33?logo=playwright&logoColor=white)
+
+![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet) ![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-Razor%20Pages-512BD4?logo=dotnet) ![xUnit](https://img.shields.io/badge/tests-xUnit%20%2B%20Playwright-green) ![SQLite](https://img.shields.io/badge/database-SQLite-003B57?logo=sqlite&logoColor=white) ![Azure](https://img.shields.io/badge/cloud-Azure_App_Service-0078D4?logo=microsoftazure) ![CI](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=githubactions)
+
+<!-- last updated: 2026-05-02 -->
 
 ---
 
 ## Table of Contents
 
-- [Business Case](#business-case)
-- [Feature Overview](#feature-overview)
-- [Architecture](#architecture)
-- [Data Model](#data-model)
-- [Technology Stack](#technology-stack)
+- [Why This Project Exists](#why-this-project-exists)
+- [The Copilot-First Development Framework](#the-copilot-first-development-framework)
+- [What Was Built: Prompt Bank](#what-was-built-prompt-bank)
+  - [Business Case](#business-case)
+  - [Feature Overview](#feature-overview)
+  - [Architecture](#architecture)
+  - [Data Model](#data-model)
+  - [Technology Stack](#technology-stack)
 - [Getting Started](#getting-started)
 - [Testing Strategy](#testing-strategy)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Deployment Architecture](#deployment-architecture)
-- [GitHub Copilot CLI — How This Project Was Built](#github-copilot-cli--how-this-project-was-built)
 - [Project Structure](#project-structure)
 - [Configuration Reference](#configuration-reference)
 - [Contributing](#contributing)
 
 ---
 
-## Business Case
+## Why This Project Exists
+
+This repository is not primarily about the app it contains. **It exists to answer a practical question:**
+
+> *Can a single developer, working with GitHub Copilot CLI as the primary engineering tool, build a production-quality full-stack application — complete with authentication, semantic search, a full test suite, CI/CD pipelines, and cloud infrastructure — faster, more consistently, and with higher quality than the traditional approach?*
+
+The answer is yes — and this project is the proof.
+
+**Prompt Bank** (the application inside this repo) is the reference implementation. It is a real, deployed web application with real features and real users. But the primary artefact of this project is the **Copilot-first development framework** that was used to build it: a structured methodology combining persistent AI context, custom specialist agents, reusable skill playbooks, and spec-driven delivery.
+
+### What "Copilot-first" means
+
+A Copilot-first workflow treats GitHub Copilot CLI not as an autocomplete shortcut, but as the **primary engineering collaborator** — responsible for architecture review, writing code, generating tests, reviewing for security, and driving the CI/CD pipeline. The human engineer sets direction, reviews outcomes, and makes final decisions. Copilot executes.
+
+This methodology was explored across the full software development lifecycle:
+
+| Phase | Traditional approach | Copilot-first approach |
+|---|---|---|
+| Feature planning | Ticket → code | Spec file (markdown) → Copilot reads and implements |
+| Architecture review | Peer review / ADR | `dotnet-security-architect` custom agent |
+| Implementation | Developer writes code | `implement-feature` skill executes 7-step workflow |
+| Unit testing | Developer writes tests | `test-coverage-engineer` agent writes and runs tests |
+| E2E testing | QA manually or scripted | `ui-automation-qa` agent drives Playwright via MCP |
+| Code review | Pull request review | `check-conventions` skill audits against all conventions |
+| Database changes | Manual migration steps | `add-ef-migration` skill handles the full safe workflow |
+| Debugging | Dev investigates | `debug-test-failure` skill diagnoses both unit and E2E failures |
+
+Every feature in Prompt Bank was delivered using this framework — authentication, semantic search, dark mode, full test coverage, Azure Bicep infrastructure, and three-workflow CI/CD. **The methodology scales.** If you're evaluating how to build AI-supported engineering practices in your team, this repository is a working blueprint.
+
+---
+
+## The Copilot-First Development Framework
+
+This section documents the framework components that make the Copilot-first workflow possible. Each component is a file in `.github/` and works automatically when you open this repository in the GitHub Copilot CLI.
+
+### Copilot Instructions (`.github/copilot-instructions.md`)
+
+The foundation of the framework. This file is the project's **persistent ambient context** — Copilot reads it automatically at the start of every session and applies all conventions without being reminded.
+
+It documents:
+- Tech stack and build commands
+- Data model with all fields and relationships
+- Sorting rules, validation conventions, authentication decisions
+- XML doc comment requirements for all public members
+- Bootstrap usage conventions and Razor Page handler naming patterns
+- How to switch database providers
+
+This file eliminates the "ramp-up tax" for every new Copilot session and ensures every engineer — junior or senior — operates within the same conventions.
+
+### Custom Agents (`.github/agents/`)
+
+Four specialist agents handle distinct domains of engineering work. Each has a detailed instruction file defining its persona, methodology, decision-making framework, quality checklist, and output format.
+
+| Agent | Role | Invoke when |
+|---|---|---|
+| `dotnet-security-architect` | Reviews .NET architecture for security gaps and over-engineering | "Is this architecture secure?", "Am I over-engineering this?" |
+| `frontend-ux-designer` | Designs UX-first frontend components with accessibility and responsiveness | "Make this look better", "Design an accessible form" |
+| `test-coverage-engineer` | Writes high-coverage unit tests following AAA pattern | "Write unit tests for", "Improve test coverage" |
+| `ui-automation-qa` | Creates comprehensive Playwright E2E test suites | "Write UI automation tests for this feature" |
+
+The key insight: the same specialist "mindset" is available consistently across every session and every team member. You don't need a senior QA engineer available to get thorough test coverage — the agent embodies that expertise.
+
+**Example:**
+> "Write unit tests for the new `SearchAsync` method" → `test-coverage-engineer` analyses the code, identifies all execution paths (threshold filtering, pin-first ordering, empty results), and writes xUnit tests with in-memory SQLite.
+
+### Skills (`.github/skills/`)
+
+Skills encode repeatable multi-step workflows as executable playbooks. They are the most powerful part of the framework — turning complex, error-prone multi-step processes into a single, repeatable command.
+
+| Skill | What it does |
+|---|---|
+| `implement-feature` | Full feature workflow: spec → code → unit tests → E2E tests → infra → move spec to `done/` |
+| `run-tests` | Knows both test projects, filter syntax, first-time Playwright setup, and all infrastructure notes |
+| `check-conventions` | Audits code against all conventions before committing |
+| `add-ef-migration` | Safe migration workflow: generate → review → build → apply → update seed/backfill |
+| `debug-test-failure` | Diagnoses both unit test and Playwright failures |
+| `update-seed-data` | Extends or modifies seed data in `Program.cs` |
+
+#### The `implement-feature` Skill
+
+The crown jewel of the framework. Every feature in this project was delivered through this 7-step workflow:
+
+```
+Step 1: Read the spec — list all acceptance criteria
+Step 2: Implement feature code (conventions from copilot-instructions.md)
+Step 3: Unit tests — must be green before proceeding
+Step 4: E2E Playwright tests — must be green before proceeding
+Step 5: Infrastructure changes (if needed)
+Step 6: Final full test suite — all tests green
+Step 7: Move spec to done/
+```
+
+The workflow is non-negotiable and strictly ordered. This prevents the classic pattern of "feature works, but tests are an afterthought" — tests are a **gate**, not an afterthought.
+
+### Spec-Driven Development (`.github/specs/`)
+
+Every feature started as a spec file before a single line of code was written. Specs capture:
+- Problem statement
+- Acceptance criteria (numbered AC-1, AC-2, ...)
+- Data model changes
+- Service layer changes
+- UI changes
+- Migration strategy
+
+Completed specs live in `.github/specs/done/` as a permanent record of what was built and why. The `specs/done/` folder effectively doubles as a **decision log** for the entire project.
+
+**All features delivered via spec-driven development:**
+
+| Spec | Feature delivered |
+|---|---|
+| `initialrequirement.md` | Core CRUD, star ratings, pin/unpin, copy to clipboard, seed data |
+| `user-authentication.md` | ASP.NET Core Identity, ownership, per-user pins/ratings |
+| `semantic-search.md` | ONNX local embeddings, semantic search, similarity threshold |
+| `dark-theme.md` | Dark/light theme toggle, localStorage persistence |
+| `prompt-description.md` | Description field, semantic search over title+description |
+| `single-column-layout.md` | Full-width prompt cards, show more/less content toggle |
+| `ci-workflow.md` | GitHub Actions CI with unit + E2E tests |
+| `cd-workflow.md` | GitHub Actions CD with OIDC and environment approval |
+| `bicep-infrastructure.md` | Modular Azure Bicep, App Service, SQLite on `/home` |
+| `e2e-test-coverage.md` | Full E2E test suite across all 13 scenario files |
+
+### Playwright MCP Server (`.github/copilot/mcp.json`)
+
+Playwright is configured as an MCP (Model Context Protocol) server, giving Copilot the ability to **drive a real browser** during development. This means Copilot can navigate to a page, interact with forms and AJAX controls, take screenshots, and verify E2E tests pass against the running app — all in a single session.
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}
+```
+
+### What This Framework Proves
+
+> **The Copilot-first workflow is not about moving faster on individual tasks. It is about compressing the gap between intent and production-ready delivery across the entire SDLC.**
+
+By the end of this project, the framework had produced:
+- ✅ A fully authenticated multi-user web application
+- ✅ Semantic search with a locally-bundled ONNX model (no external API)
+- ✅ 13 E2E Playwright test files covering all user flows
+- ✅ Full unit test suite for all business logic
+- ✅ Three-workflow CI/CD pipeline with OIDC authentication (no stored secrets)
+- ✅ Modular Azure Bicep infrastructure for two environments
+- ✅ 10 completed spec files documenting every architectural decision
+
+All of this was built by a single developer working with the GitHub Copilot CLI. The framework is what made that possible.
+
+---
+
+## What Was Built: Prompt Bank
+
+The application built through this framework is **Prompt Bank** — a self-hosted, collaborative prompt library for engineering teams using GitHub Copilot.
+
+### Business Case
 
 Adopting GitHub Copilot at scale surfaces a repeatable friction point: **prompt quality is inconsistent across the team**. Senior engineers craft prompts that unlock Copilot's full potential — generating production-ready unit tests, reviewing code for security flaws, summarising PRs in seconds. Junior engineers repeat trial-and-error every day. That institutional knowledge disappears when people switch teams or leave.
 
@@ -186,8 +349,8 @@ ApplicationUser (IdentityUser)
 ### Clone and run
 
 ```bash
-git clone https://github.com/sanuja-ariyapperuma/promptbank.git
-cd promptbank
+git clone https://github.com/sanuja-ariyapperuma/copilot-first-workflow.git
+cd copilot-first-workflow
 
 dotnet build
 dotnet run --project PromptBank
@@ -433,115 +596,6 @@ The `environment` parameter drives all naming (`rg-promptbank-{env}`, `app-promp
 
 ---
 
-## GitHub Copilot CLI — How This Project Was Built
-
-Prompt Bank was built end-to-end using the **GitHub Copilot CLI** (`gh copilot`) as the primary development tool. This section documents the full Copilot-assisted engineering workflow so the approach can be replicated on other projects.
-
-### Copilot Instructions (`.github/copilot-instructions.md`)
-
-The repository contains a rich Copilot instructions file that persists project context across every session. It documents:
-
-- Tech stack and build commands
-- Data model with all fields and relationships
-- Sorting rules, validation conventions, authentication decisions
-- XML doc comment requirements for all public members
-- Bootstrap usage conventions and Razor Page handler naming patterns
-- How to switch database providers
-
-This file acts as the project's **ambient context** — Copilot reads it automatically and applies the conventions without being reminded each time.
-
-### Custom Agents (`.github/agents/`)
-
-Four specialist agents were created to handle distinct domains of engineering work:
-
-| Agent | Role | When Invoked |
-|---|---|---|
-| `dotnet-security-architect` | Reviews .NET architecture for security gaps and over-engineering | "Is this architecture secure?", "Am I over-engineering this?" |
-| `frontend-ux-designer` | Designs UX-first frontend components with accessibility and responsiveness | "Make this look better", "Design an accessible form" |
-| `test-coverage-engineer` | Writes high-coverage unit tests following AAA pattern | "Write unit tests for", "Improve test coverage" |
-| `ui-automation-qa` | Creates comprehensive Playwright E2E test suites | "Write UI automation tests for this feature" |
-
-Each agent has a detailed instruction file defining its persona, methodology, decision-making framework, quality checklist, and output format. This means the same specialist "mindset" is available consistently across every session and every team member.
-
-**Example agent invocation:**
-> "Write unit tests for the new `SearchAsync` method" → `test-coverage-engineer` agent analyses the code, identifies all execution paths (threshold filtering, pin-first ordering, empty results), and writes xUnit tests with in-memory SQLite.
-
-### Skills (`.github/skills/`)
-
-Skills encode repeatable multi-step workflows as executable playbooks:
-
-| Skill | Purpose |
-|---|---|
-| `implement-feature` | Full feature workflow: spec → code → unit tests → E2E tests → infra → move spec to `done/` |
-| `run-tests` | Knows both test projects, filter syntax, first-time Playwright setup, and all infrastructure notes |
-| `check-conventions` | Audits code against all conventions before committing |
-| `add-ef-migration` | Safe migration workflow: generate → review → build → apply → update seed/backfill |
-| `debug-test-failure` | Diagnoses both unit test and Playwright failures |
-| `update-seed-data` | Extends or modifies seed data in `Program.cs` |
-
-The `implement-feature` skill is the crown jewel — it enforces a strict, ordered workflow:
-
-```
-Step 1: Read the spec (list all ACs)
-Step 2: Implement feature code (conventions from copilot-instructions.md)
-Step 3: Unit tests (must be green before proceeding)
-Step 4: E2E Playwright tests (must be green before proceeding)
-Step 5: Infrastructure changes (if needed)
-Step 6: Final full test suite
-Step 7: Move spec to done/
-```
-
-This workflow was used to implement every feature in the project — authentication, semantic search, dark mode, CI/CD, Bicep infrastructure, and more.
-
-### Spec-Driven Development (`.github/specs/`)
-
-Every feature started as a spec file in `.github/specs/`. Specs capture:
-- Problem statement
-- Acceptance criteria (numbered AC-1, AC-2, ...)
-- Data model changes
-- Service layer changes
-- UI changes
-- Migration strategy
-
-Completed specs live in `.github/specs/done/` as a permanent record of what was built and why. The `specs/done/` folder effectively doubles as a decision log for the project.
-
-**Delivered features (all spec-driven):**
-
-| Spec | Feature |
-|---|---|
-| `initialrequirement.md` | Core CRUD, star ratings, pin/unpin, copy to clipboard, seed data |
-| `user-authentication.md` | ASP.NET Core Identity, ownership, per-user pins/ratings |
-| `semantic-search.md` | ONNX local embeddings, semantic search, similarity threshold |
-| `dark-theme.md` | Dark/light theme toggle, localStorage persistence |
-| `prompt-description.md` | Description field, semantic search over title+description |
-| `single-column-layout.md` | Full-width prompt cards, show more/less content toggle |
-| `ci-workflow.md` | GitHub Actions CI with unit + E2E tests |
-| `cd-workflow.md` | GitHub Actions CD with OIDC and environment approval |
-| `bicep-infrastructure.md` | Modular Azure Bicep, App Service, SQLite on `/home` |
-| `e2e-test-coverage.md` | Full E2E test suite across all 13 scenario files |
-
-### Playwright MCP Server (`.github/copilot/mcp.json`)
-
-Playwright is configured as an MCP (Model Context Protocol) server, giving Copilot the ability to **drive a real browser** during development. This means Copilot can:
-
-- Navigate to a page and observe the live UI
-- Interact with forms, buttons, and AJAX controls
-- Take screenshots during test development
-- Verify that E2E tests pass against the running app
-
-```json
-{
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"]
-    }
-  }
-}
-```
-
----
-
 ## Project Structure
 
 ```
@@ -654,6 +708,8 @@ prompt bank/
 
 ## Contributing
 
+This repository is a living blueprint. Contributions that improve the Copilot-first framework — new agents, improved skills, better spec templates — are as valuable as feature contributions to the application itself.
+
 1. Fork the repository and create a feature branch
 2. Read `.github/copilot-instructions.md` — it defines all conventions
 3. Follow the spec-driven workflow: create a spec in `.github/specs/` before writing code
@@ -671,4 +727,4 @@ prompt bank/
 
 ---
 
-*Prompt Bank — your internal GitHub Copilot prompt library 📚*
+*copilot-first-workflow — a blueprint for AI-assisted engineering, built with GitHub Copilot CLI 🤖*
